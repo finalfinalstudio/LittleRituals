@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>focus timer</title>
+  <link rel="stylesheet" href="style.css?v=6" />
+</head>
+<body>
+  <main class="app" id="app">
+    <button id="showSettingsBtn" class="settings-fab" type="button" aria-label="show settings" title="show settings" hidden>⚙</button>
+
+    <section class="timer-column">
+      <div class="timer-display" id="timerDisplay">25:00</div>
+
+      <div class="animation-stage" id="animationStage" aria-live="polite">
+        <div id="animationMount"></div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-track" aria-label="timer progress">
+          <div id="progressBar" class="progress-bar"></div>
+        </div>
+        <div class="progress-meta">
+          <span id="progressPercent">0%</span>
+          <span id="remainingLabel">25:00 left</span>
+        </div>
+      </div>
+    </section>
+
+    <aside class="settings-panel" id="settingsPanel">
+      <div class="top-controls" aria-label="timer controls">
+        <button id="startBtn" class="control-button primary" type="button" aria-label="start" title="start">▶</button>
+        <button id="pauseBtn" class="control-button" type="button" aria-label="pause" title="pause">Ⅱ</button>
+        <button id="resetBtn" class="control-button" type="button" aria-label="reset" title="reset">↺</button>
+      </div>
+
+      <div class="settings-content">
+        <div class="field-block">
+          <label class="field-label">duration</label>
+          <div class="duration-row">
+            <input id="hoursInput" type="number" min="0" max="23" value="0" aria-label="hours" />
+            <span>h</span>
+            <input id="minutesInput" type="number" min="0" max="59" value="25" aria-label="minutes" />
+            <span>m</span>
+            <input id="secondsInput" type="number" min="0" max="59" value="0" aria-label="seconds" />
+            <span>s</span>
+          </div>
+        </div>
+
+        <div class="field-block">
+          <label class="field-label" for="animationSelect">animation</label>
+          <select id="animationSelect">
+            <option value="jar">filling jar</option>
+            <option value="ice">melting ice</option>
+            <option value="candle">burning candle</option>
+            <option value="plant">growing plant</option>
+            <option value="hourglass">hourglass</option>
+            <option value="sunrise">sunrise</option>
+            <option value="books">book stack</option>
+          </select>
+        </div>
+
+        <div class="setting-row">
+          <span>finish sound</span>
+          <label class="switch" aria-label="finish sound">
+            <input id="soundToggle" type="checkbox" checked />
+            <span class="switch-track"></span>
+          </label>
+        </div>
+
+        <div class="setting-row">
+          <span>hide settings</span>
+          <label class="switch" aria-label="hide settings">
+            <input id="hideSettingsToggle" type="checkbox" />
+            <span class="switch-track"></span>
+          </label>
+        </div>
+
+
+        <div class="setting-row">
+          <span>background</span>
+          <label class="color-button" title="background color">
+            <input id="backgroundInput" type="color" value="#f6f7f8" aria-label="background color" />
+            <span id="backgroundSwatch"></span>
+          </label>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <div id="doneOverlay" class="done-overlay" hidden>
+    <div class="done-card">
+      <strong>done ✨</strong>
+      <button id="closeDoneBtn" type="button">restart</button>
+    </div>
+  </div>
+
+  <script src="animations.js?v=6"></script>
+  <script src="script.js?v=6"></script>
+</body>
+</html>
