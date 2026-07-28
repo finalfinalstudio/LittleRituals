@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Little Rituals</title>
+<style>
+:root{
+  --bg:#07110e; --panel:#0b1713; --panel-2:#10201a; --text:#edf5e9;
+  --muted:#afbeaf; --line:rgba(255,255,255,.11); --accent:#7dd6c8;
+  --accent-soft:rgba(125,214,200,.18); --shadow:0 24px 70px rgba(0,0,0,.24);
+}
+*{box-sizing:border-box} html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text)}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:18px;transition:background .45s,color .45s}
+button,select,input{font:inherit;color:inherit}.app{max-width:1500px;margin:auto;min-height:calc(100vh - 36px);display:grid;grid-template-columns:minmax(0,2fr) minmax(340px,.9fr);border:1px solid var(--line);border-radius:32px;overflow:hidden;background:color-mix(in srgb,var(--panel) 92%,transparent);box-shadow:var(--shadow)}
+.stage{padding:34px;display:flex;flex-direction:column;min-width:0}.topline{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;font-family:Georgia,serif;font-size:clamp(20px,2vw,30px);letter-spacing:.01em}.ritual-title{display:flex;gap:10px;align-items:center}.title-icon{width:30px;height:30px;display:inline-grid;place-items:center}.title-icon svg{width:100%;height:100%}.canvas{position:relative;flex:1;min-height:500px;border:1px solid var(--line);border-radius:28px;overflow:hidden;background:#101512}
+.scene{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .35s}.scene.active{opacity:1}.scene svg{width:100%;height:100%;display:block}
+.progress{height:8px;margin-top:20px;background:rgba(255,255,255,.10);border-radius:999px;overflow:hidden}.progress>span{display:block;height:100%;width:0;background:var(--accent);border-radius:inherit;transition:width .12s linear}
+.controls{padding:34px;border-left:1px solid var(--line);background:color-mix(in srgb,var(--panel) 96%,black 4%);display:flex;flex-direction:column;gap:24px}.control-icons{display:flex;gap:12px}.icon-btn{width:58px;height:50px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.045);display:grid;place-items:center;cursor:pointer;transition:.18s}.icon-btn:hover{background:rgba(255,255,255,.09);transform:translateY(-1px)}.icon-btn:active{transform:scale(.96)}.icon-btn.active{background:var(--accent);color:#102016;border-color:transparent}.icon-btn.dim{opacity:.35}.icon-btn svg{width:22px;height:22px}
+.labelrow{display:flex;justify-content:space-between;align-items:center;font-size:15px;color:var(--muted);margin-bottom:12px}.value{color:var(--text)}input[type=range]{width:100%;accent-color:var(--accent)}.presets{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:12px}.preset{border:1px solid var(--line);background:rgba(255,255,255,.045);border-radius:999px;padding:8px 0;cursor:pointer}.preset.active{background:var(--accent);color:#102016;border-color:transparent}
+.ritual-list{background:color-mix(in srgb,var(--panel-2) 76%,white 4%);border:1px solid var(--line);border-radius:20px;overflow:hidden}.ritual-option{height:50px;display:flex;align-items:center;gap:12px;padding:0 16px;border:0;border-bottom:1px solid rgba(255,255,255,.07);width:100%;background:transparent;cursor:pointer;text-align:left}.ritual-option:last-child{border-bottom:0}.ritual-option:hover{background:rgba(255,255,255,.055)}.ritual-option.active{background:var(--accent-soft)}.ritual-icon{width:24px;height:24px;opacity:0;transform:translateX(-4px);transition:.18s;flex:0 0 24px}.ritual-option:hover .ritual-icon,.ritual-option.active .ritual-icon{opacity:1;transform:none}.ritual-icon svg{width:100%;height:100%;display:block}
+.select-row{display:flex;justify-content:space-between;align-items:center;gap:16px;color:var(--muted)}select{min-width:160px;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:14px;padding:12px 42px 12px 14px}.switch{width:48px;height:28px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.08);position:relative;cursor:pointer}.switch:after{content:"";position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;left:4px;top:3px;transition:.2s}.switch.on{background:var(--accent)}.switch.on:after{left:23px}.settings-hidden .controls{display:none}.settings-hidden .app{grid-template-columns:1fr}.gear{display:none;position:fixed;right:26px;top:24px;width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--text);place-items:center;cursor:pointer}.settings-hidden .gear{display:grid}
+@media(max-width:900px){body{padding:0}.app{border-radius:0;grid-template-columns:1fr}.controls{border-left:0;border-top:1px solid var(--line)}.canvas{min-height:420px}.stage,.controls{padding:22px}.presets{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:560px){.canvas{min-height:360px}.topline{font-size:20px}.controls{gap:20px}.presets{grid-template-columns:repeat(3,1fr)}}
+/* shared scene helpers */
+.paper{fill:#f7f0e4}.soft-shadow{filter:drop-shadow(0 10px 18px rgba(0,0,0,.18))}.grow-stroke{stroke-dasharray:1;stroke-dashoffset:1}.idle{transform-box:fill-box;transform-origin:center}.scene.idling .idle{animation:sway 4s ease-in-out infinite alternate}.scene.idling .twinkle{animation:twinkle 2.8s ease-in-out infinite}.scene.idling .float{animation:float 4.2s ease-in-out infinite alternate}.scene.idling .flicker{animation:flicker 1.7s ease-in-out infinite alternate}@keyframes sway{to{transform:rotate(1.3deg)}}@keyframes twinkle{50%{opacity:.25;transform:scale(.72)}}@keyframes float{to{transform:translate(8px,-10px)}}@keyframes flicker{to{opacity:.72;transform:scale(.96)}}
+</style>
+</head>
+<body>
+<button class="gear" id="gear" aria-label="Show settings">⚙</button>
+<div class="app">
+  <main class="stage">
+    <div class="topline"><span id="timeDisplay">25:00</span><span class="ritual-title"><span id="ritualName">wonder</span><span class="title-icon" id="titleIcon"></span></span></div>
+    <div class="canvas" id="canvas"></div>
+    <div class="progress"><span id="progressFill"></span></div>
+  </main>
+  <aside class="controls">
+    <div class="control-icons">
+      <button class="icon-btn active" id="startBtn" aria-label="Start"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"/></svg></button>
+      <button class="icon-btn" id="pauseBtn" aria-label="Pause"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 5h4v14H7zm6 0h4v14h-4z"/></svg></button>
+      <button class="icon-btn dim" id="resetBtn" aria-label="Reset"><svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M4 4v6h6M5.5 9a7 7 0 1 1-.4 6"/></svg></button>
+    </div>
+    <section>
+      <div class="labelrow"><span>duration</span><span class="value" id="durationValue">25 min</span></div>
+      <input id="durationSlider" type="range" min="1" max="120" value="25" />
+      <div class="presets" id="presets"></div>
+    </section>
+    <div class="ritual-list" id="ritualList"></div>
+    <div class="select-row"><span>finish sound</span><select id="soundSelect"><option value="none">no sound</option><option value="soft">soft chime</option><option value="glass">glass bell</option><option value="bowl">singing bowl</option><option value="wind">wind chime</option><option value="wood">wood knock</option></select></div>
+    <div class="select-row"><span>hide settings</span><button class="switch" id="hideSwitch" aria-label="Hide settings"></button></div>
+  </aside>
+</div>
+<script>
+const ICONS={
+ bloom:`<svg viewBox="0 0 32 32"><path d="M16 27V13M16 18C10 18 6 14 5 8c6 0 10 3 11 8m0 1c6 0 10-4 11-10-6 0-10 3-11 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+ glow:`<svg viewBox="0 0 32 32"><path d="M10 14h12v13H10zM12 14c0-3 2-5 4-5s4 2 4 5M16 9c-3-3 1-6 1-8 3 3 4 6-1 8z" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
+ flow:`<svg viewBox="0 0 32 32"><path d="M9 4h14M9 28h14M11 5c0 7 5 7 5 11s-5 4-5 11m10-22c0 7-5 7-5 11s5 4 5 11" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
+ rise:`<svg viewBox="0 0 32 32"><path d="M5 24h22M8 24a8 8 0 0 1 16 0M16 4v5M5 14l4 2M27 14l-4 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+ read:`<svg viewBox="0 0 32 32"><path d="M6 7h20v5H6zM8 13h18v5H8zM5 19h20v6H5z" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
+ melt:`<svg viewBox="0 0 32 32"><path d="M9 9l7-4 7 4v9l-7 4-7-4zM5 25c3-2 5 2 8 0s5 2 8 0 5 2 7 0" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
+ fall:`<svg viewBox="0 0 32 32"><path d="M25 5C14 6 7 13 7 25c10 0 17-7 18-20zM8 24l14-14" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
+ grow:`<svg viewBox="0 0 32 32"><path d="M6 26C10 18 12 9 25 5M12 20c-5 0-7-3-7-7 5 0 8 2 8 6m4-7c0-5 3-8 8-9 0 5-2 8-7 10m-1 6c5-1 8 1 10 5-5 2-9 1-11-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+ wonder:`<svg viewBox="0 0 32 32"><path d="M16 28V14M16 19c-6 0-9-4-10-9 6 0 9 3 10 7m0 1c6 0 9-4 10-9-6 0-9 3-10 7" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="6" r="1.5" fill="currentColor"/><circle cx="26" cy="5" r="1.5" fill="currentColor"/><circle cx="26" cy="22" r="1.5" fill="currentColor"/></svg>`
+};
+const THEMES={
+ bloom:{bg:'#eaf6df',panel:'#f4faec',panel2:'#dff1ce',text:'#294131',muted:'#627a68',accent:'#8fcf73',soft:'rgba(143,207,115,.22)'},
+ glow:{bg:'#050504',panel:'#0a0908',panel2:'#11100e',text:'#f4e9d4',muted:'#a99e8d',accent:'#d29b43',soft:'rgba(210,155,67,.18)'},
+ flow:{bg:'#eee8f7',panel:'#f7f3fb',panel2:'#e4daf2',text:'#433953',muted:'#746985',accent:'#a986cf',soft:'rgba(169,134,207,.22)'},
+ rise:{bg:'#fff4c9',panel:'#fff9df',panel2:'#f9e8a7',text:'#5a4a24',muted:'#85754a',accent:'#e7ba4e',soft:'rgba(231,186,78,.22)'},
+ read:{bg:'#3a2c23',panel:'#443329',panel2:'#503b2f',text:'#f2e6d7',muted:'#c0a996',accent:'#b88e6a',soft:'rgba(184,142,106,.2)'},
+ melt:{bg:'#dbeaf2',panel:'#eaf4f8',panel2:'#c7dde8',text:'#294354',muted:'#657c8a',accent:'#83b7d4',soft:'rgba(131,183,212,.24)'},
+ fall:{bg:'#4b211b',panel:'#562820',panel2:'#663128',text:'#f7e3d7',muted:'#c8a699',accent:'#d8794f',soft:'rgba(216,121,79,.22)'},
+ grow:{bg:'#173626',panel:'#1d412e',panel2:'#244d37',text:'#e7f2e6',muted:'#a9c0aa',accent:'#78b989',soft:'rgba(120,185,137,.22)'},
+ wonder:{bg:'#1d1528',panel:'#261b32',panel2:'#30213e',text:'#f2eaf5',muted:'#b7a9c0',accent:'#78d2c5',soft:'rgba(120,210,197,.2)'}
+};
+const rituals=['bloom','glow','flow','rise','read','melt','fall','grow','wonder'];
+const canvas=document.getElementById('canvas');
+function sceneWrap(id,inner){return `<div class="scene" data-scene="${id}">${inner}</div>`}
+function createScenes(){
+ canvas.innerHTML=
+ sceneWrap('bloom',`<svg viewBox="0 0 900 560"><defs><linearGradient id="bsky" y2="1"><stop stop-color="#f7fbef"/><stop offset="1" stop-color="#ddefce"/></linearGradient></defs><rect width="900" height="560" fill="url(#bsky)"/><ellipse cx="450" cy="490" rx="260" ry="55" fill="#8c6546" opacity=".78"/><g id="b-root" stroke="#dcd6ba" stroke-width="5" fill="none" stroke-linecap="round"><path d="M450 472c-10 18-25 28-40 38"/><path d="M450 474c8 18 24 28 43 37"/></g><g class="idle" id="b-plant"><path id="b-stem" d="M450 478C450 390 451 280 450 175" stroke="#56885b" stroke-width="13" fill="none" stroke-linecap="round"/><path id="b-left" d="M450 345c-55-10-86-42-101-83 49 0 84 21 101 66" fill="#83ba72" stroke="#4f7f52" stroke-width="5"/><path id="b-right" d="M450 300c54-7 91-41 105-87-55 2-90 25-105 70" fill="#99cc80" stroke="#4f7f52" stroke-width="5"/><g id="b-flower" transform="translate(450 160)"><g fill="#f4a9b7" stroke="#d97f91" stroke-width="3"><ellipse rx="34" ry="75" transform="rotate(0) translate(0 -32)"/><ellipse rx="34" ry="75" transform="rotate(60) translate(0 -32)"/><ellipse rx="34" ry="75" transform="rotate(120) translate(0 -32)"/><ellipse rx="34" ry="75" transform="rotate(180) translate(0 -32)"/><ellipse rx="34" ry="75" transform="rotate(240) translate(0 -32)"/><ellipse rx="34" ry="75" transform="rotate(300) translate(0 -32)"/></g><circle r="29" fill="#e2b24c"/></g></g></svg>`)+
+ sceneWrap('glow',`<svg viewBox="0 0 900 560"><rect width="900" height="560" fill="#080706"/><rect y="430" width="900" height="130" fill="#241a12"/><ellipse cx="450" cy="460" rx="180" ry="30" fill="#000" opacity=".4"/><g class="idle"><rect id="g-candle" x="365" y="185" width="170" height="280" rx="30" fill="#eee1c7"/><path id="g-wax" d="M380 200c20 25 25-8 45 18s23-10 42 12 31-15 52 8v46H380z" fill="#d8c5a4"/><g id="g-flame" class="flicker"><path d="M450 170c-40-50 3-92 8-128 40 42 53 91-8 128z" fill="#f4a62a"/><path d="M451 154c-20-27 4-49 6-69 22 24 26 48-6 69z" fill="#fff0a0"/></g><ellipse id="g-glow" cx="450" cy="175" rx="190" ry="170" fill="#d78f28" opacity=".18"/></g></svg>`)+
+ sceneWrap('flow',`<svg viewBox="0 0 900 560"><rect width="900" height="560" fill="#efe9f8"/><g class="soft-shadow" transform="translate(280 55)"><path d="M90 40h160M90 450h160" stroke="#6c547e" stroke-width="22" stroke-linecap="round"/><path d="M110 60C110 190 170 190 170 255S110 330 110 430M230 60C230 190 170 190 170 255s60 75 60 175" fill="none" stroke="#735b86" stroke-width="10"/><path d="M124 70h92c-5 92-46 115-46 170-22-57-42-78-46-170z" fill="#d4b16f" id="f-topSand"/><path d="M170 240v120" stroke="#d4b16f" stroke-width="7" id="f-stream"/><path d="M115 420c22-83 88-82 110 0z" fill="#d4b16f" id="f-bottomSand"/></g></svg>`)+
+ sceneWrap('rise',`<svg viewBox="0 0 900 560"><defs><linearGradient id="rsky" y2="1"><stop stop-color="#fff9dd"/><stop offset="1" stop-color="#f7cf74"/></linearGradient></defs><rect width="900" height="560" fill="url(#rsky)"/><circle id="r-sun" cx="170" cy="430" r="58" fill="#f5b832"/><path d="M0 410Q200 330 420 420T900 400V560H0z" fill="#9eb57c"/><path d="M0 465Q250 370 500 455T900 440V560H0z" fill="#708d62"/><g id="r-rays" stroke="#edb541" stroke-width="5" stroke-linecap="round"><path d="M170 330v-30M95 350l-20-25M245 350l20-25"/></g></svg>`)+
+ sceneWrap('read',`<svg viewBox="0 0 900 560"><rect width="900" height="560" fill="#4a352a"/><rect y="415" width="900" height="145" fill="#2b1f19"/><g class="soft-shadow" transform="translate(260 130)"><g id="books"><rect id="book1" x="0" y="230" width="380" height="75" rx="8" fill="#80634d"/><rect id="book2" x="30" y="155" width="340" height="75" rx="8" fill="#9a6e58"/><rect id="book3" x="65" y="80" width="300" height="75" rx="8" fill="#6e7755"/><rect id="book4" x="105" y="5" width="250" height="75" rx="8" fill="#b98a65"/></g></g><g class="idle" id="steam" fill="none" stroke="#d7c5b4" stroke-width="5" opacity=".45"><path d="M700 310c-25-35 22-48 0-83"/><path d="M735 310c-25-35 22-48 0-83"/></g><path d="M660 330h110v100H660z" fill="#c8a984"/><path d="M770 350c55 0 55 60 0 60" fill="none" stroke="#c8a984" stroke-width="18"/></svg>`)+
+ sceneWrap('melt',`<svg viewBox="0 0 900 560"><defs><linearGradient id="msky"><stop stop-color="#eaf4f8"/><stop offset="1" stop-color="#bad8e7"/></linearGradient></defs><rect width="900" height="560" fill="url(#msky)"/><ellipse cx="450" cy="440" rx="240" ry="70" fill="#eef2ed" stroke="#9ab2ba" stroke-width="8"/><ellipse id="m-puddle" cx="450" cy="420" rx="70" ry="18" fill="#7ec4e4" opacity=".55"/><g class="soft-shadow" id="m-ice"><path d="M350 210l110-55 100 60-10 180-105 45-105-50z" fill="#bfe8f7" opacity=".78" stroke="#76aac3" stroke-width="6"/><path d="M350 210l100 60 110-55-100-60z" fill="#e0f6ff" opacity=".9"/><path d="M450 270v170" stroke="#86bad1" stroke-width="6" opacity=".6"/></g><circle class="float" id="m-drop" cx="555" cy="390" r="10" fill="#66b7db"/></svg>`)+
+ sceneWrap('fall',`<svg viewBox="0 0 900 560"><rect width="900" height="560" fill="#5a2c23"/><path d="M0 420Q240 360 500 425T900 400V560H0z" fill="#8a4c31"/><g id="fall-tree" class="idle"><path d="M470 470c-30-160 5-260 10-360" stroke="#3b251b" stroke-width="28" fill="none"/><path d="M470 300c-80-70-120-135-140-205M475 270c80-55 130-115 155-185M470 210c-45-55-45-105-42-145" stroke="#3b251b" stroke-width="18" fill="none" stroke-linecap="round"/><g id="fall-leaves" fill="#d87845"><circle cx="330" cy="110" r="50"/><circle cx="410" cy="100" r="58"/><circle cx="505" cy="92" r="62"/><circle cx="590" cy="112" r="52"/><circle cx="365" cy="180" r="55"/><circle cx="470" cy="165" r="65"/><circle cx="565" cy="180" r="55"/></g></g><g id="falling-leaves" fill="#e9954b"><path d="M250 220c24-10 35 5 25 27-21 10-36-3-25-27z"/><path d="M680 260c24-10 35 5 25 27-21 10-36-3-25-27z"/><path d="M310 330c24-10 35 5 25 27-21 10-36-3-25-27z"/></g></svg>`)+
+ sceneWrap('grow',`<svg viewBox="0 0 900 560"><rect width="900" height="560" fill="#1b3b2b"/><rect x="100" y="70" width="700" height="410" rx="28" fill="#9a8f7b" opacity=".35"/><path id="v-main" d="M170 470C250 410 230 330 340 300s90-120 210-145 105-75 185-85" fill="none" stroke="#75b676" stroke-width="17" stroke-linecap="round"/><g id="v-leaves" fill="#8fc98a"><ellipse cx="260" cy="380" rx="40" ry="22" transform="rotate(-28 260 380)"/><ellipse cx="315" cy="320" rx="42" ry="22" transform="rotate(25 315 320)"/><ellipse cx="430" cy="245" rx="42" ry="22" transform="rotate(-24 430 245)"/><ellipse cx="525" cy="170" rx="42" ry="22" transform="rotate(28 525 170)"/><ellipse cx="645" cy="120" rx="42" ry="22" transform="rotate(-18 645 120)"/></g><g id="v-flowers" fill="#7a9ee8"><circle cx="390" cy="270" r="15"/><circle cx="570" cy="145" r="16"/><circle cx="700" cy="92" r="16"/></g><g id="v-lights" fill="#ffe88a"><circle class="twinkle" cx="340" cy="250" r="7"/><circle class="twinkle" cx="510" cy="115" r="7"/><circle class="twinkle" cx="680" cy="145" r="7"/></g></svg>`)+
+ sceneWrap('wonder',`<svg  viewBox="0 0 1200 760" role="img" aria-label="A watercolor garden growing around an old door">
+          <defs>
+            <linearGradient id="paperWash" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#d9d1bd"/>
+              <stop offset="0.5" stop-color="#b6b59e"/>
+              <stop offset="1" stop-color="#8e9b82"/>
+            </linearGradient>
+            <linearGradient id="doorPaint" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#355b59"/>
+              <stop offset="1" stop-color="#173735"/>
+            </linearGradient>
+            <radialGradient id="lanternGlow">
+              <stop offset="0" stop-color="#fff5b8" stop-opacity=".95"/>
+              <stop offset=".35" stop-color="#e8c96c" stop-opacity=".5"/>
+              <stop offset="1" stop-color="#e8c96c" stop-opacity="0"/>
+            </radialGradient>
+            <filter id="watercolor" x="-15%" y="-15%" width="130%" height="130%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.012 0.04" numOctaves="2" seed="8" result="noise"/>
+              <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="B"/>
+            </filter>
+            <filter id="softGlow" x="-100%" y="-100%" width="300%" height="300%">
+              <feGaussianBlur stdDeviation="8" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <clipPath id="doorClip"><path d="M458 508V296c0-129 284-129 284 0v212z"/></clipPath>
+          </defs>
+
+          <!-- fixed illustrated base -->
+          <rect width="1200" height="760" fill="#0b1916"/>
+          <rect x="28" y="28" width="1144" height="704" rx="32" fill="url(#paperWash)"/>
+          <g filter="url(#watercolor)">
+            <path d="M70 560C178 481 250 502 338 472c72-25 126-39 188-15 101 39 175 27 265 3 114-30 209-5 338 85v155H70z" fill="#6f725f" opacity=".92"/>
+            <path d="M80 545c106-47 184-49 274-28 111 26 176 9 270-3 124-15 269 6 488 86" fill="none" stroke="#a6a48b" stroke-width="64" stroke-linecap="round" opacity=".55"/>
+            <path d="M238 560c145-41 287-58 413-18 103 32 197 29 324-2" fill="none" stroke="#d4c9aa" stroke-width="104" stroke-linecap="round" opacity=".55"/>
+            <g fill="#77796d" stroke="#515b54" stroke-width="5" opacity=".96">
+              <path d="M392 190h416v375H392z" fill="#84877d"/>
+              <path d="M423 510V291c0-167 354-167 354 0v219z" fill="#52605b"/>
+            </g>
+            <g fill="#9a998a" stroke="#646c63" stroke-width="5">
+              <path d="M390 190h420v46H390z"/>
+              <path d="M390 235h45v333h-45zM765 235h45v333h-45z"/>
+              <path d="M412 231c45-125 333-125 376 0l-44 12c-30-93-270-93-300 0z"/>
+            </g>
+            <path d="M458 508V296c0-129 284-129 284 0v212z" fill="url(#doorPaint)" stroke="#183431" stroke-width="8"/>
+            <g clip-path="url(#doorClip)" stroke="#71908a" stroke-width="4" opacity=".45">
+              <path d="M500 220v310M545 205v325M590 190v340M635 190v340M680 205v325"/>
+            </g>
+            <circle cx="693" cy="401" r="13" fill="none" stroke="#b2a172" stroke-width="7"/>
+            <path d="M180 516c-17-111 17-225 92-337M237 517c13-116 2-215-25-312" fill="none" stroke="#4b4637" stroke-width="18" stroke-linecap="round"/>
+            <g id="lanternFixture" transform="translate(250 226)">
+              <path d="M0 0h105" stroke="#3a3b34" stroke-width="12" stroke-linecap="round"/>
+              <path d="M90 0v62" stroke="#3a3b34" stroke-width="10"/>
+              <path d="M55 4c12 25 23 25 35 0" fill="none" stroke="#3a3b34" stroke-width="9"/>
+              <path d="M54 63h72l-10 106H65z" fill="#263b39" stroke="#252d2b" stroke-width="8"/>
+              <path d="M71 81h38v64H72z" fill="#ccd0bd" opacity=".2"/>
+            </g>
+            <path d="M852 528v-86c0-26 135-26 135 0v86z" fill="#9e7656" stroke="#644b39" stroke-width="7"/>
+            <ellipse cx="919" cy="441" rx="69" ry="22" fill="#b98c65" stroke="#644b39" stroke-width="7"/>
+            <ellipse cx="919" cy="443" rx="53" ry="13" fill="#423a2d"/>
+          </g>
+
+          <!-- progress-controlled garden layers -->
+          <g id="w-moss" class="growth-layer moss-layer">
+            <g fill="#52684c" opacity=".95" filter="url(#watercolor)">
+              <ellipse cx="250" cy="568" rx="135" ry="42"/><ellipse cx="420" cy="570" rx="120" ry="36"/>
+              <ellipse cx="765" cy="563" rx="112" ry="38"/><ellipse cx="963" cy="571" rx="130" ry="40"/>
+              <ellipse cx="518" cy="625" rx="140" ry="38"/><ellipse cx="696" cy="625" rx="126" ry="34"/>
+            </g>
+          </g>
+
+          <g id="w-mush" class="growth-layer mushroom-layer" filter="url(#watercolor)">
+            <g transform="translate(298 548)"><path d="M0 36c2-24 27-24 29 0" fill="#d3bd94"/><path d="M-17 16c5-25 58-25 64 0z" fill="#8b684d"/></g>
+            <g transform="translate(840 555) scale(.8)"><path d="M0 36c2-24 27-24 29 0" fill="#d3bd94"/><path d="M-17 16c5-25 58-25 64 0z" fill="#7c5b46"/></g>
+            <g transform="translate(1010 592) scale(.55)"><path d="M0 36c2-24 27-24 29 0" fill="#d3bd94"/><path d="M-17 16c5-25 58-25 64 0z" fill="#9a6e50"/></g>
+          </g>
+
+          <g id="w-ferns" class="growth-layer fern-layer idle" fill="none" stroke="#486a4f" stroke-linecap="round" filter="url(#watercolor)">
+            <g transform="translate(352 583)"><path d="M0 55Q8 2 33-38" stroke-width="8"/><path d="M12 27l-30-22M18 13l32-25M24-3L0-28M30-19l30-11" stroke-width="12"/></g>
+            <g transform="translate(792 590) scale(1.2)"><path d="M0 55Q8 2 33-38" stroke-width="8"/><path d="M12 27l-30-22M18 13l32-25M24-3L0-28M30-19l30-11" stroke-width="12"/></g>
+            <g transform="translate(925 579) scale(.9)"><path d="M0 55Q8 2 33-38" stroke-width="8"/><path d="M12 27l-30-22M18 13l32-25M24-3L0-28M30-19l30-11" stroke-width="12"/></g>
+          </g>
+
+          <g id="w-vines" class="growth-layer vine-layer idle" fill="none" stroke="#53714d" stroke-linecap="round" filter="url(#watercolor)">
+            <path d="M421 540C368 452 446 408 404 324c-27-53 2-104 45-134" stroke-width="13"/>
+            <path d="M782 540c77-80-6-139 51-215 31-42 22-90-12-132" stroke-width="13"/>
+            <g fill="#66865d" stroke="none">
+              <ellipse cx="408" cy="462" rx="20" ry="9" transform="rotate(-35 408 462)"/><ellipse cx="443" cy="407" rx="22" ry="10" transform="rotate(30 443 407)"/>
+              <ellipse cx="404" cy="348" rx="21" ry="9" transform="rotate(-30 404 348)"/><ellipse cx="433" cy="284" rx="20" ry="9" transform="rotate(24 433 284)"/>
+              <ellipse cx="806" cy="456" rx="21" ry="9" transform="rotate(28 806 456)"/><ellipse cx="792" cy="396" rx="21" ry="9" transform="rotate(-30 792 396)"/>
+              <ellipse cx="830" cy="338" rx="23" ry="10" transform="rotate(34 830 338)"/><ellipse cx="821" cy="267" rx="20" ry="9" transform="rotate(-25 821 267)"/>
+            </g>
+          </g>
+
+          <g id="w-flowers" class="growth-layer flower-layer idle" filter="url(#watercolor)">
+            <g fill="#738fbd" stroke="#526a8f" stroke-width="3">
+              <g transform="translate(342 525)"><circle r="9" fill="#e8d486"/><ellipse rx="8" ry="20" cy="-18"/><ellipse rx="8" ry="20" cy="18"/><ellipse rx="20" ry="8" cx="-18"/><ellipse rx="20" ry="8" cx="18"/></g>
+              <g transform="translate(874 514) scale(.9)"><circle r="9" fill="#e8d486"/><ellipse rx="8" ry="20" cy="-18"/><ellipse rx="8" ry="20" cy="18"/><ellipse rx="20" ry="8" cx="-18"/><ellipse rx="20" ry="8" cx="18"/></g>
+              <g transform="translate(978 539) scale(.7)"><circle r="9" fill="#e8d486"/><ellipse rx="8" ry="20" cy="-18"/><ellipse rx="8" ry="20" cy="18"/><ellipse rx="20" ry="8" cx="-18"/><ellipse rx="20" ry="8" cx="18"/></g>
+            </g>
+            <g fill="#d8a8bb" stroke="#a67589" stroke-width="3">
+              <g transform="translate(438 442) scale(.7)"><circle r="9" fill="#e8d486"/><ellipse rx="8" ry="20" cy="-18"/><ellipse rx="8" ry="20" cy="18"/><ellipse rx="20" ry="8" cx="-18"/><ellipse rx="20" ry="8" cx="18"/></g>
+              <g transform="translate(806 374) scale(.65)"><circle r="9" fill="#e8d486"/><ellipse rx="8" ry="20" cy="-18"/><ellipse rx="8" ry="20" cy="18"/><ellipse rx="20" ry="8" cx="-18"/><ellipse rx="20" ry="8" cx="18"/></g>
+            </g>
+          </g>
+
+          <g id="w-pot" class="growth-layer pot-plant-layer idle" transform="translate(920 438)" filter="url(#watercolor)">
+            <path d="M0 5Q0-70 8-108" stroke="#4f7354" stroke-width="10" fill="none" stroke-linecap="round"/>
+            <ellipse cx="-12" cy="-56" rx="28" ry="11" fill="#678a62" transform="rotate(25 -12 -56)"/>
+            <ellipse cx="23" cy="-82" rx="26" ry="10" fill="#6d9165" transform="rotate(-25 23 -82)"/>
+            <g transform="translate(10 -116) scale(.55)" fill="#8aa3c7"><circle r="10" fill="#e4d58d"/><ellipse rx="9" ry="22" cy="-20"/><ellipse rx="9" ry="22" cy="20"/><ellipse rx="22" ry="9" cx="-20"/><ellipse rx="22" ry="9" cx="20"/></g>
+          </g>
+
+          <g id="w-light" class="growth-layer light-layer flicker">
+            <circle cx="340" cy="345" r="120" fill="url(#lanternGlow)" filter="url(#softGlow)"/>
+            <rect x="316" y="307" width="48" height="74" rx="16" fill="#ffe9a1" opacity=".8" filter="url(#softGlow)"/>
+          </g>
+
+          <g id="w-fireflies" class="growth-layer firefly-layer" fill="#fff3a2" filter="url(#softGlow)">
+            <circle class="firefly f1 float" cx="462" cy="408" r="5"/><circle class="firefly f2 float" cx="739" cy="465" r="5"/>
+            <circle class="firefly f3 float" cx="896" cy="331" r="4"/><circle class="firefly f4 float" cx="584" cy="558" r="4"/>
+            <circle class="firefly f5 float" cx="1010" cy="440" r="4"/><circle class="firefly f6 float" cx="276" cy="494" r="4"/>
+          </g>
+        </svg>`);
+}
+createScenes();
+let current='wonder',duration=25*60,remaining=duration,running=false,last=0,raf=null,finished=false;
+const timeDisplay=document.getElementById('timeDisplay'),progressFill=document.getElementById('progressFill'),ritualName=document.getElementById('ritualName'),titleIcon=document.getElementById('titleIcon');
+function applyTheme(id){const t=THEMES[id];for(const [k,v] of Object.entries(t)){document.documentElement.style.setProperty(`--${k==='panel2'?'panel-2':k==='soft'?'accent-soft':k}`,v)}ritualName.textContent=id;titleIcon.innerHTML=ICONS[id];document.querySelectorAll('.scene').forEach(s=>s.classList.toggle('active',s.dataset.scene===id));document.querySelectorAll('.ritual-option').forEach(b=>b.classList.toggle('active',b.dataset.id===id));updateScene(progress())}
+function progress(){return duration?Math.min(1,Math.max(0,1-remaining/duration)):0}
+function fade(el,a,b,p){if(!el)return;el.style.opacity=p<=a?0:p>=b?1:(p-a)/(b-a)}
+function scale(el,a,b,p,from=.15,to=1){if(!el)return;const x=p<=a?from:p>=b?to:from+(to-from)*(p-a)/(b-a);el.style.transformBox='fill-box';el.style.transformOrigin='center bottom';el.style.transform=`scale(${x})`}
+function updateScene(p){
+ const s=document.querySelector(`.scene[data-scene="${current}"]`);if(!s)return;
+ s.classList.toggle('idling',!running && (finished||p>0));
+ if(current==='bloom'){scale(s.querySelector('#b-root'),0,.12,p,0,1);scale(s.querySelector('#b-plant'),.08,.7,p,0.03,1);scale(s.querySelector('#b-flower'),.68,1,p,0.05,1)}
+ if(current==='glow'){const c=s.querySelector('#g-candle');const h=280*(1-p*.65),y=185+280-h;c.setAttribute('height',h);c.setAttribute('y',y);s.querySelector('#g-wax').style.transform=`translateY(${280-h}px)`;s.querySelector('#g-flame').style.transform=`translateY(${280-h}px)`;s.querySelector('#g-glow').style.transform=`translateY(${280-h}px)`}
+ if(current==='flow'){const top=s.querySelector('#f-topSand'),bottom=s.querySelector('#f-bottomSand'),stream=s.querySelector('#f-stream');top.style.transformOrigin='170px 70px';top.style.transform=`scaleY(${1-p})`;bottom.style.transformOrigin='170px 420px';bottom.style.transform=`scaleY(${Math.max(.05,p)})`;stream.style.opacity=p>0&&p<1?1:0}
+ if(current==='rise'){const sun=s.querySelector('#r-sun'),rays=s.querySelector('#r-rays');const x=170+560*p,y=430-260*Math.sin(Math.PI*p);sun.setAttribute('cx',x);sun.setAttribute('cy',y);rays.style.transform=`translate(${x-170}px,${y-430}px)`;rays.style.opacity=Math.min(1,p*2)}
+ if(current==='read'){['book4','book3','book2','book1'].forEach((id,i)=>{const start=i*.22,end=start+.2,el=s.querySelector('#'+id);let q=p<=start?0:p>=end?1:(p-start)/(end-start);el.style.transform=`translate(${q*360}px,${-q*80}px) rotate(${q*12}deg)`;el.style.opacity=1-q})}
+ if(current==='melt'){const ice=s.querySelector('#m-ice'),puddle=s.querySelector('#m-puddle'),drop=s.querySelector('#m-drop');ice.style.transformOrigin='450px 440px';ice.style.transform=`scale(${1-p*.72}) translateY(${p*45}px)`;puddle.setAttribute('rx',70+150*p);puddle.setAttribute('ry',18+20*p);drop.style.opacity=p>.55?1:0}
+ if(current==='fall'){const leaves=[...s.querySelectorAll('#fall-leaves circle')];leaves.forEach((el,i)=>{const start=i/leaves.length*.8;let q=Math.max(0,Math.min(1,(p-start)/.18));el.style.transform=`translate(${(i%2?1:-1)*q*50}px,${q*300}px) rotate(${q*180}deg)`;el.style.opacity=1-q});fade(s.querySelector('#falling-leaves'),.15,.85,p)}
+ if(current==='grow'){const path=s.querySelector('#v-main');path.style.strokeDasharray=path.getTotalLength();path.style.strokeDashoffset=path.getTotalLength()*(1-p);fade(s.querySelector('#v-leaves'),.25,.65,p);fade(s.querySelector('#v-flowers'),.7,.9,p);fade(s.querySelector('#v-lights'),.9,1,p)}
+ if(current==='wonder'){fade(s.querySelector('#w-moss'),.02,.22,p);scale(s.querySelector('#w-ferns'),.18,.42,p,0.05,1);scale(s.querySelector('#w-mush'),.35,.55,p,0.05,1);const vine=s.querySelector('#w-vines');fade(vine,.48,.78,p);scale(vine,.48,.78,p,.05,1);fade(s.querySelector('#w-flowers'),.72,.9,p);scale(s.querySelector('#w-pot'),.78,.94,p,.08,1);fade(s.querySelector('#w-light'),.95,1,p);fade(s.querySelector('#w-fireflies'),.97,1,p)}
+}
+function format(sec){sec=Math.max(0,Math.ceil(sec));return `${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`}
+function render(){timeDisplay.textContent=format(remaining);progressFill.style.width=`${progress()*100}%`;updateScene(progress())}
+function tick(ts){if(!running)return;if(!last)last=ts;remaining-=Math.min((ts-last)/1000,1);last=ts;if(remaining<=0){remaining=0;running=false;finished=true;finishSound();setButtons();render();return}render();raf=requestAnimationFrame(tick)}
+function setButtons(){document.getElementById('startBtn').classList.toggle('active',!running);document.getElementById('pauseBtn').classList.toggle('active',running);document.getElementById('resetBtn').classList.toggle('dim',remaining===duration&&!running)}
+document.getElementById('startBtn').onclick=()=>{if(remaining<=0){remaining=duration;finished=false}running=true;last=0;setButtons();raf=requestAnimationFrame(tick)};
+document.getElementById('pauseBtn').onclick=()=>{running=false;cancelAnimationFrame(raf);setButtons();render()};
+document.getElementById('resetBtn').onclick=()=>{running=false;cancelAnimationFrame(raf);remaining=duration;finished=false;last=0;setButtons();render()};
+const slider=document.getElementById('durationSlider'),durationValue=document.getElementById('durationValue');slider.oninput=()=>setDuration(+slider.value);function setDuration(min){duration=min*60;remaining=duration;running=false;finished=false;durationValue.textContent=`${min} min`;slider.value=min;document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('active',+b.dataset.min===min));setButtons();render()}
+[5,15,25,45,60,90,120].forEach(n=>{const b=document.createElement('button');b.className='preset'+(n===25?' active':'');b.dataset.min=n;b.textContent=n;b.onclick=()=>setDuration(n);document.getElementById('presets').appendChild(b)});
+rituals.forEach(id=>{const b=document.createElement('button');b.className='ritual-option'+(id===current?' active':'');b.dataset.id=id;b.innerHTML=`<span class="ritual-icon">${ICONS[id]}</span><span>${id}</span>`;b.onclick=()=>{current=id;applyTheme(id)};document.getElementById('ritualList').appendChild(b)});
+document.getElementById('hideSwitch').onclick=()=>{document.body.classList.add('settings-hidden');document.getElementById('hideSwitch').classList.add('on')};document.getElementById('gear').onclick=()=>{document.body.classList.remove('settings-hidden');document.getElementById('hideSwitch').classList.remove('on')};
+function finishSound(){const type=document.getElementById('soundSelect').value;if(type==='none')return;const C=window.AudioContext||window.webkitAudioContext,ctx=new C(),o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=type==='glass'?880:type==='bowl'?330:type==='wind'?660:type==='wood'?220:523.25;g.gain.setValueAtTime(.001,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.18,ctx.currentTime+.02);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+1.4);o.start();o.stop(ctx.currentTime+1.5)}
+applyTheme(current);render();setButtons();
+</script>
+</body>
+</html>
