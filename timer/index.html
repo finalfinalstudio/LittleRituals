@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Wonder timer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="app" data-ritual="wonder">
+  <section class="stage">
+    <header class="stage-meta">
+      <div id="timeDisplay" class="time-display">25:00</div>
+      <div class="current-ritual"><span>wonder</span><img src="assets/icons/wonder.svg" alt=""></div>
+    </header>
+
+    <div class="visual" aria-label="Wonder animation">
+      <video id="mainVideo" muted playsinline preload="auto" src="assets/videos/wonder-main.mp4"></video>
+      <video id="idleVideo" muted playsinline preload="auto" loop src="assets/videos/wonder-idle.mp4"></video>
+      <button id="openSettings" class="settings-fab" type="button" aria-label="Show settings">⚙</button>
+    </div>
+    <div class="progress-track" aria-hidden="true"><div id="progressFill" class="progress-fill"></div></div>
+  </section>
+
+  <aside id="settingsPanel" class="settings-panel">
+    <div class="controls">
+      <button id="startButton" class="primary" type="button">start</button>
+      <button id="pauseButton" type="button">pause</button>
+      <button id="resetButton" type="button">reset</button>
+    </div>
+
+    <section class="setting-block duration-block">
+      <div class="setting-heading"><label for="durationSlider">duration</label><output id="durationOutput">25 min</output></div>
+      <input id="durationSlider" type="range" min="1" max="120" step="1" value="25">
+      <div class="presets" aria-label="Duration presets">
+        <button type="button" data-minutes="5">5</button><button type="button" data-minutes="15">15</button>
+        <button type="button" class="active" data-minutes="25">25</button><button type="button" data-minutes="45">45</button>
+        <button type="button" data-minutes="60">60</button><button type="button" data-minutes="90">90</button>
+        <button type="button" data-minutes="120">120</button>
+      </div>
+    </section>
+
+    <nav class="ritual-list" aria-label="Rituals">
+      <button type="button" aria-disabled="true"><span class="icon-slot"><img src="assets/icons/bloom.svg" alt=""></span><span>bloom</span></button>
+      <button type="button" aria-disabled="true"><span class="icon-slot"><img src="assets/icons/glow.svg" alt=""></span><span>glow</span></button>
+      <button type="button" aria-disabled="true"><span class="icon-slot"><img src="assets/icons/flow.svg" alt=""></span><span>flow</span></button>
+      <button type="button" aria-disabled="true"><span class="icon-slot"><img src="assets/icons/rise.svg" alt=""></span><span>rise</span></button>
+      <button type="button" aria-disabled="true"><span class="icon-slot"><img src="assets/icons/read.svg" alt=""></span><span>read</span></button>
+      <button type="button" aria-disabled="true"><span class="icon-slot"><img src="assets/icons/melt.svg" alt=""></span><span>melt</span></button>
+      <button type="button" aria-disabled="true"><span class="icon-slot"><img src="assets/icons/fall.svg" alt=""></span><span>fall</span></button>
+      <button type="button" aria-disabled="true"><span class="icon-slot"><img src="assets/icons/grow.svg" alt=""></span><span>grow</span></button>
+      <button type="button" class="selected" aria-current="true"><span class="icon-slot"><img src="assets/icons/wonder.svg" alt=""></span><span>wonder</span></button>
+    </nav>
+
+    <div class="setting-row">
+      <label for="soundSelect">finish sound</label>
+      <select id="soundSelect">
+        <option value="none">no sound</option>
+        <option value="soft-chime" selected>soft chime</option>
+        <option value="glass-bell">glass bell</option>
+        <option value="singing-bowl">singing bowl</option>
+        <option value="wind-chime">wind chime</option>
+        <option value="wood-knock">wood knock</option>
+        <option value="forest-bell">forest bell</option>
+        <option value="gentle-piano">gentle piano</option>
+      </select>
+    </div>
+
+    <div class="setting-row">
+      <label for="hideSettings">hide settings</label>
+      <input id="hideSettings" class="switch" type="checkbox">
+    </div>
+  </aside>
+</main>
+<script src="script.js"></script>
+</body>
+</html>
