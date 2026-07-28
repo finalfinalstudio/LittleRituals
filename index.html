@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Little Rituals — Bloom</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-ritual="wonder">
+  <main class="widget" aria-label="Little Rituals focus timer">
+    <section class="stage-panel">
+      <header class="brand-row">
+        <span class="brand">little rituals</span>
+        <button class="icon-button settings-toggle" id="settingsToggle" aria-label="show settings">⚙</button>
+      </header>
+
+      <div class="timer" id="timerDisplay">25:00</div>
+
+      <div class="animation-shell" aria-label="wonder animation">
+        <video id="mainVideo" muted playsinline preload="auto"></video>
+        <video id="idleVideo" muted playsinline preload="auto" loop></video>
+      </div>
+
+      <div class="progress-track" aria-hidden="true">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+
+      <div class="mobile-controls">
+        <button class="primary" id="mobileStart">start</button>
+        <button class="secondary" id="mobileReset">reset</button>
+      </div>
+    </section>
+
+    <aside class="settings-panel" id="settingsPanel">
+      <div class="ritual-title-row">
+        <span class="ritual-hover-icon" aria-hidden="true">
+          <img id="activeRitualIcon" src="assets/icons/wonder.svg" alt="" />
+        </span>
+        <span id="activeRitualName">wonder</span>
+      </div>
+
+      <div class="button-row">
+        <button class="primary" id="startButton">start</button>
+        <button class="secondary" id="pauseButton">pause</button>
+        <button class="secondary" id="resetButton">reset</button>
+      </div>
+
+      <label class="setting-row">
+        <span>duration</span>
+        <select id="durationSelect">
+          <option value="5">5 min</option>
+          <option value="15">15 min</option>
+          <option value="25" selected>25 min</option>
+          <option value="45">45 min</option>
+          <option value="60">60 min</option>
+        </select>
+      </label>
+
+      <div class="setting-block">
+        <span class="setting-label">ritual</span>
+        <div class="ritual-list" id="ritualList"></div>
+      </div>
+
+      <label class="setting-row">
+        <span>finish sound</span>
+        <select id="finishSoundSelect">
+          <option value="chime" selected>soft chime</option>
+          <option value="none">none</option>
+        </select>
+      </label>
+
+      <label class="setting-row checkbox-row">
+        <span>hide settings</span>
+        <input type="checkbox" id="hideSettings" />
+      </label>
+
+      <label class="setting-row color-row">
+        <span>background</span>
+        <input type="color" id="backgroundPicker" value="#101b18" aria-label="background color" />
+      </label>
+    </aside>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
